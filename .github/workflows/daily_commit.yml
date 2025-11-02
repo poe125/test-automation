@@ -1,7 +1,6 @@
 name: Mao's Daily Commit
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: '*/1 * * * *'  # Every day at midnight UTC to runs every 7-8 min set cron to '*/1 * * * *'
 
