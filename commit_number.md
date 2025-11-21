@@ -1,2 +1,2 @@
 Hello, my name is Mao Kurono
-commit number: 69
+commit number: 70
