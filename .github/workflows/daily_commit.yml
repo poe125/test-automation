@@ -1,10 +1,10 @@
 name: Mao's Daily Commit
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '5 3 * * *'  # Every day at midnight UTC to runs every 7-8 min set cron to '*/1 * * * *'
-    - cron: '5 4 * * *'
+    - cron: '5 3 * * *'   # Runs once per day (adjust as needed)
+  workflow_dispatch:
+
 jobs:
   commit:
     runs-on: ubuntu-latest
@@ -13,26 +13,46 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        ref: main 
+        ref: main
 
-    - name: Create file and commit
+    - name: Random commits (0–3 times)
       run: |
+        # Generate random number 0–3
+        COUNT=$(( RANDOM % 4 ))
+        echo "Today's commit count: $COUNT"
+
+        # File to update
         FILE="commit_number.md"
-        if [ ! -f "$FILE" ]; then
-          echo "Hello, my name is Mao Kurono" > "$FILE"
-          echo "commit number: 1" >> "$FILE"
-        else
-          CURRENT_COUNT=$(grep -oP 'commit number: \K\d+' "$FILE")
-          if [ -z "$CURRENT_COUNT" ]; then
-            CURRENT_COUNT=0
+
+        # Loop from 1..COUNT
+        for i in $(seq 1 $COUNT); do
+          echo "Performing commit $i..."
+
+          # Initialize or update file
+          if [ ! -f "$FILE" ]; then
+            echo "Hello, my name is Mao Kurono" > "$FILE"
+            echo "commit number: 1" >> "$FILE"
+          else
+            CURRENT_COUNT=$(grep -oP 'commit number: \K\d+' "$FILE")
+            if [ -z "$CURRENT_COUNT" ]; then
+              CURRENT_COUNT=0
+            fi
+            NEXT_COUNT=$((CURRENT_COUNT + 1))
+            sed -i "/commit number: /c\commit number: $NEXT_COUNT" "$FILE"
           fi
-          NEXT_COUNT=$((CURRENT_COUNT + 1))
-          sed -i "/commit number: /c\commit number: $NEXT_COUNT" "$FILE"
+
+          # Git commit
+          git config --global user.name "poe125"
+          git config --global user.email "rinbear98@gmail.com"
+          git add "$FILE"
+          git commit -m "Daily random commit $NEXT_COUNT"
+        done
+
+        # Only push if commits actually happened
+        if [ "$COUNT" -gt 0 ]; then
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/poe125/secret.git
+        else
+          echo "No commits today."
         fi
-        git config --global user.name "poe125"
-        git config --global user.email "rinbear98@gmail.com"
-        git add "$FILE"
-        git commit -m "Hello, my name is Mao Kurono nice to meet you"
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/poe125/secret.git
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
